@@ -1,0 +1,24 @@
+_BASE_: "Base-RESNET-FCOS.yaml"
+MODEL:
+  RESNETS:
+    NORM: "SyncBN"
+    #NORM: "BN"
+    DEPTH: 50
+INPUT:
+  MIN_SIZE_TRAIN: (640, 672, 704, 736, 768, 800)
+  MAX_SIZE_TRAIN: 1333
+SOLVER:
+  CHECKPOINT_PERIOD: 80000
+  WARMUP_ITERS: 500
+  IMS_PER_BATCH: 4
+  BASE_LR: 0.005  # Note that RetinaNet uses a different default learning rate
+  STEPS: (240000, 320000)
+  MAX_ITER: 360000
+  #STEPS: (60000, 80000)
+  #MAX_ITER: 90000
+
+
+
+
+
+
