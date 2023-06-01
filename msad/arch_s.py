@@ -96,11 +96,11 @@ class SFCOS(nn.Module):
         for param in self.T_fcos_head.parameters():
             param.requires_grad = False
 
-        for param in self.S_fcos_head.parameters():
-            param.requires_grad = False
+        #for param in self.S_fcos_head.parameters():
+        #   param.requires_grad = False
 
-        for param in self.SE.parameters():
-            param.requires_grad = False
+        #for param in self.SE.parameters():
+        #    param.requires_grad = False
 
         # generate sizes of interest
         self.sizes_of_interest = cfg.MODEL.FCOS.SIZES_OF_INTEREST
@@ -135,15 +135,16 @@ class SFCOS(nn.Module):
         
         # preprocess image, high resolution images, low resolution image
         hr_images, lr_images = self.preprocess_image(batched_inputs)
+        
         # global feature -- [p2, p3, p4, p5, p6, p7]
         hr_features = self.T_backbone(hr_images.tensor)
-        lr_features = self.T_backbone(lr_images.tensor)
+        #lr_features = self.T_backbone(lr_images.tensor)
         st_features = self.S_backbone(lr_images.tensor)
 
         hr_features = [hr_features[f] for f in self.h_in_features]
-        lr_features = [lr_features[f] for f in self.l_in_features]
+        #lr_features = [lr_features[f] for f in self.l_in_features]
         st_features = [st_features[f] for f in self.l_in_features]
-
+        '''
         fr_features = []
         for hr_feature, lr_feature in zip(hr_features, lr_features):
             fr_feature = torch.cat([hr_feature, lr_feature], dim=1)
@@ -152,7 +153,7 @@ class SFCOS(nn.Module):
 
             # fusion_score = self.SE(fr_feature).view(-1)
             # fr_features.append(fusion_score[0]*hr_feature+fusion_score[1]*lr_feature)
-        
+        '''
 
         locations = self.compute_locations(hr_features)
 
@@ -197,6 +198,8 @@ class SFCOS(nn.Module):
             
             losses = OrderedDict()
             # create a dict to store the losses, according index to create a loss dict
+          
+            '''
             projected_fr_features = []
             projected_st_features = []
             for fr_feature, st_feature in zip(fr_features, st_features):
@@ -211,15 +214,19 @@ class SFCOS(nn.Module):
 
             # Compute the total projector loss
             #projector_loss = sum(projector_losses) / len(projector_losses)
-            projector_loss = sum(projector_losses) 
+            #projector_loss = sum(projector_losses) 
 
             # Add the projector loss to the total loss
-            losses.update({"loss_projector": projector_loss})
+            #losses.update({"loss_projector": projector_loss})
+            
+            #add KD loss
+            #losses["loss_kd"] = 0.2 *  self.kd(fr_features, st_features)
+            '''
+
             st_losses, _ = st_outputs.losses()
             for key, value in st_losses.items():
                 losses[key+"_st"] = value
 
-            losses["loss_kd"] = self.kd(fr_features, st_features)
             self.count = self.count+1
             if self.count == 500:
                 self.count = 500
